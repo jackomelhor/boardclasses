@@ -1,0 +1,207 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { CalendarDays, FileUp, ListChecks, Save, X } from "lucide-react";
+import type { TaskFormValues } from "@/lib/types";
+
+const initialValues: TaskFormValues = {
+  title: "",
+  description: "",
+  subject: "",
+  taskType: "trabalho",
+  dueDate: "",
+  priority: "media",
+  status: "pendente",
+  checklistRaw: "",
+  file: null,
+};
+
+type TaskFormProps = {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (values: TaskFormValues) => Promise<void> | void;
+  submitting: boolean;
+};
+
+export function TaskForm({ open, onClose, onSubmit, submitting }: TaskFormProps) {
+  const [values, setValues] = useState<TaskFormValues>(initialValues);
+
+  useEffect(() => {
+    if (!open) {
+      setValues(initialValues);
+    }
+  }, [open]);
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-2xl rounded-[28px] bg-white shadow-panel border border-slate-200 overflow-hidden">
+        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
+          <div>
+            <h2 className="text-2xl font-bold text-slate-900">Nova tarefa</h2>
+            <p className="text-sm text-slate-500 mt-1">Fases 1 e 2 juntas: tarefa, prioridade, checklist e anexo.</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 text-slate-600 transition hover:bg-slate-50"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <form
+          className="grid gap-5 p-6"
+          onSubmit={async (event) => {
+            event.preventDefault();
+            await onSubmit(values);
+          }}
+        >
+          <div className="grid gap-5 md:grid-cols-2">
+            <label className="grid gap-2">
+              <span className="text-sm font-medium text-slate-700">Título</span>
+              <input
+                required
+                value={values.title}
+                onChange={(e) => setValues((prev) => ({ ...prev, title: e.target.value }))}
+                className="h-12 rounded-2xl border border-slate-200 px-4"
+                placeholder="Ex.: Trabalho de Ciências"
+              />
+            </label>
+
+            <label className="grid gap-2">
+              <span className="text-sm font-medium text-slate-700">Matéria</span>
+              <input
+                required
+                value={values.subject}
+                onChange={(e) => setValues((prev) => ({ ...prev, subject: e.target.value }))}
+                className="h-12 rounded-2xl border border-slate-200 px-4"
+                placeholder="Ex.: Ciências"
+              />
+            </label>
+          </div>
+
+          <label className="grid gap-2">
+            <span className="text-sm font-medium text-slate-700">Descrição</span>
+            <textarea
+              value={values.description}
+              onChange={(e) => setValues((prev) => ({ ...prev, description: e.target.value }))}
+              className="min-h-[110px] rounded-2xl border border-slate-200 px-4 py-3"
+              placeholder="Explique rapidamente o que precisa ser feito"
+            />
+          </label>
+
+          <div className="grid gap-5 md:grid-cols-4">
+            <label className="grid gap-2">
+              <span className="text-sm font-medium text-slate-700">Tipo</span>
+              <select
+                value={values.taskType}
+                onChange={(e) => setValues((prev) => ({ ...prev, taskType: e.target.value as TaskFormValues["taskType"] }))}
+                className="h-12 rounded-2xl border border-slate-200 px-4"
+              >
+                <option value="prova">Prova</option>
+                <option value="trabalho">Trabalho</option>
+                <option value="atividade">Atividade</option>
+                <option value="apresentacao">Apresentação</option>
+              </select>
+            </label>
+
+            <label className="grid gap-2">
+              <span className="text-sm font-medium text-slate-700">Prioridade</span>
+              <select
+                value={values.priority}
+                onChange={(e) => setValues((prev) => ({ ...prev, priority: e.target.value as TaskFormValues["priority"] }))}
+                className="h-12 rounded-2xl border border-slate-200 px-4"
+              >
+                <option value="alta">Alta</option>
+                <option value="media">Média</option>
+                <option value="baixa">Baixa</option>
+              </select>
+            </label>
+
+            <label className="grid gap-2">
+              <span className="text-sm font-medium text-slate-700">Status</span>
+              <select
+                value={values.status}
+                onChange={(e) => setValues((prev) => ({ ...prev, status: e.target.value as TaskFormValues["status"] }))}
+                className="h-12 rounded-2xl border border-slate-200 px-4"
+              >
+                <option value="pendente">Pendente</option>
+                <option value="em_andamento">Em andamento</option>
+                <option value="concluida">Concluída</option>
+              </select>
+            </label>
+
+            <label className="grid gap-2">
+              <span className="text-sm font-medium text-slate-700">Prazo</span>
+              <div className="relative">
+                <input
+                  required
+                  type="date"
+                  value={values.dueDate}
+                  onChange={(e) => setValues((prev) => ({ ...prev, dueDate: e.target.value }))}
+                  className="h-12 w-full rounded-2xl border border-slate-200 px-4 pr-11"
+                />
+                <CalendarDays className="pointer-events-none absolute right-4 top-3.5 h-5 w-5 text-slate-400" />
+              </div>
+            </label>
+          </div>
+
+          <label className="grid gap-2">
+            <span className="text-sm font-medium text-slate-700">Checklist</span>
+            <div className="relative">
+              <textarea
+                value={values.checklistRaw}
+                onChange={(e) => setValues((prev) => ({ ...prev, checklistRaw: e.target.value }))}
+                className="min-h-[120px] rounded-2xl border border-slate-200 px-4 py-3 pl-12"
+                placeholder={"Digite um item por linha\nPesquisar tema\nMontar slides\nEnsaiar apresentação"}
+              />
+              <ListChecks className="pointer-events-none absolute left-4 top-4 h-5 w-5 text-slate-400" />
+            </div>
+          </label>
+
+          <label className="grid gap-2">
+            <span className="text-sm font-medium text-slate-700">Anexo</span>
+            <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-5">
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div className="flex items-center gap-3 text-slate-600">
+                  <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white border border-slate-200">
+                    <FileUp className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="font-medium">PDF, imagem, documento ou slide</p>
+                    <p className="text-sm text-slate-500">Opcional. Será salvo no bucket task-files do Supabase.</p>
+                  </div>
+                </div>
+                <input
+                  type="file"
+                  onChange={(e) => setValues((prev) => ({ ...prev, file: e.target.files?.[0] ?? null }))}
+                  className="block w-full max-w-xs rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600"
+                />
+              </div>
+            </div>
+          </label>
+
+          <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              onClick={onClose}
+              className="inline-flex h-12 items-center justify-center rounded-2xl border border-slate-200 px-5 font-medium text-slate-700 transition hover:bg-slate-50"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-brand-600 px-5 font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              <Save className="h-4 w-4" />
+              {submitting ? "Salvando..." : "Salvar tarefa"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
